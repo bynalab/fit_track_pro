@@ -18,7 +18,7 @@ class DashboardPage extends StatelessWidget {
           builder: (context, state) {
             return RefreshIndicator(
               onRefresh: () async {
-                await Future.delayed(const Duration(milliseconds: 500));
+                context.read<DashboardCubit>().refresh();
               },
               child: CustomScrollView(
                 slivers: [
@@ -27,36 +27,28 @@ class DashboardPage extends StatelessWidget {
                       padding: const EdgeInsets.all(16.0),
                       child: Column(
                         children: [
-                          CustomChart(
-                            dataPoints: [
-                              {
-                                'steps': state.stats.steps,
-                                'calories': state.stats.calories,
-                                'bpm': state.stats.bpm,
-                              }
-                            ],
-                          ),
+                          CustomChart(sessions: state.sessions),
                           const SizedBox(height: 20),
                           AnimatedStatsList(
                             children: [
                               DashboardCard(
                                 title: 'Steps',
                                 value: state.stats.steps,
-                                unit: 'steps',
+                                unit: 'Steps',
                                 icon: Icons.directions_walk,
                                 color: Colors.green,
                               ),
                               DashboardCard(
                                 title: 'Calories',
                                 value: state.stats.calories,
-                                unit: 'cal',
+                                unit: 'Cal',
                                 icon: Icons.local_fire_department,
                                 color: Colors.yellow,
                               ),
                               DashboardCard(
                                 title: 'Heart Rate',
                                 value: state.stats.bpm,
-                                unit: 'bpm',
+                                unit: 'BPM',
                                 icon: Icons.heart_broken,
                                 color: Colors.red,
                               ),

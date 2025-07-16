@@ -38,43 +38,26 @@ class RingPainter extends CustomPainter {
   }
 }
 
-class AnimatedRing extends StatefulWidget {
+class AnimatedRing extends StatelessWidget {
   final double progress;
-  const AnimatedRing({super.key, required this.progress});
+  final AnimationController controller;
 
-  @override
-  State<AnimatedRing> createState() => _AnimatedRingState();
-}
-
-class _AnimatedRingState extends State<AnimatedRing>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _pulseController;
-
-  @override
-  void initState() {
-    super.initState();
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1000),
-    )..repeat(reverse: true);
-  }
-
-  @override
-  void dispose() {
-    _pulseController.dispose();
-    super.dispose();
-  }
+  const AnimatedRing({
+    super.key,
+    required this.progress,
+    required this.controller,
+  });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: _pulseController,
+      animation: controller,
       builder: (_, __) {
-        final scale = 1 + (_pulseController.value * 0.05);
+        final scale = 1 + (controller.value * 0.05);
         return Transform.scale(
           scale: scale,
           child: CustomPaint(
-            painter: RingPainter(progress: widget.progress),
+            painter: RingPainter(progress: progress),
             child: const SizedBox(width: 200, height: 200),
           ),
         );

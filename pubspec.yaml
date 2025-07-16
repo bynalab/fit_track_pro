@@ -16,7 +16,7 @@ dependencies:
   equatable: ^2.0.5
   get_it: ^7.6.4
   path_provider: ^2.1.2
-  shared_preferences: ^2.2.2
+  shared_preferences: ^2.5.3
   flutter_local_notifications: ^19.3.0
   permission_handler: ^11.3.0
   cupertino_icons: ^1.0.8

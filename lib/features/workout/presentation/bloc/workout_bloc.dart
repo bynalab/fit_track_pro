@@ -1,7 +1,9 @@
 import 'package:fit_track_pro/core/services/notification_service.dart';
-import 'package:fit_track_pro/features/dashboard/data/workout_repository.dart';
+import 'package:fit_track_pro/core/utils/formatter.dart';
+import 'package:fit_track_pro/features/workout/domain/repository/i_workout_repository.dart';
 import 'package:fit_track_pro/features/dashboard/domain/model/workout_stats.dart';
 import 'package:fit_track_pro/features/workout/data/services/workout_timer_service.dart';
+import 'package:fit_track_pro/features/workout/domain/model/workout_session.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
@@ -10,7 +12,7 @@ part 'workout_event.dart';
 part 'workout_state.dart';
 
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
-  final WorkoutRepository repository;
+  final IWorkoutRepository repository;
   final WorkoutTimerService _timerService;
   final NotificationService notifications;
 
@@ -28,6 +30,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   }
 
   void _onStart(StartWorkout event, Emitter<WorkoutState> emit) {
+    repository.resetStatsStream();
     _startListeningToStats();
 
     _timerService.start((seconds) {
@@ -36,7 +39,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
       notifications.showWorkoutProgress(
         id: 1,
         title: 'Workout in progress',
-        body: 'Elapsed time: $seconds sec',
+        body: 'Elapsed time: ${formatElapsedTime(seconds)}',
       );
     });
 
@@ -62,7 +65,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     notifications.showWorkoutProgress(
       id: 1,
       title: 'Workout resumed',
-      body: 'Elapsed time: ${_timerService.elapsed} sec',
+      body: 'Elapsed time: ${formatElapsedTime(_timerService.elapsed)}',
     );
 
     emit(WorkoutInProgress(elapsed: _timerService.elapsed));
@@ -78,9 +81,19 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     _timerService.stop();
     await _stopListeningToStats();
     await notifications.cancel(1);
-    await repository.resetStats();
+    await repository.resetStatsStream();
 
-    // TODO(byna): persist the stats
+    await repository.saveSession(
+      WorkoutSession(
+        date: DateTime.now(),
+        stats: WorkoutStats(
+          steps: state.stats?.steps ?? 0,
+          calories: state.stats?.calories ?? 0,
+          bpm: state.stats?.bpm ?? 0,
+        ),
+        duration: _timerService.elapsed,
+      ),
+    );
 
     emit(const WorkoutCompleted());
   }

@@ -33,19 +33,24 @@ class _AnimatedStatsListState extends State<AnimatedStatsList>
   void _runStaggered() {
     for (int i = 0; i < _controllers.length; i++) {
       Future.delayed(
-          Duration(milliseconds: i * 150), () => _controllers[i].forward());
+        Duration(milliseconds: i * 150),
+        () => _controllers[i].forward(),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: List.generate(widget.children.length, (index) {
-        return ScaleTransition(
-          scale: _animations[index],
-          child: widget.children[index],
-        );
-      }),
+      children: List.generate(
+        widget.children.length,
+        (index) {
+          return ScaleTransition(
+            scale: _animations[index],
+            child: widget.children[index],
+          );
+        },
+      ),
     );
   }
 
@@ -54,6 +59,7 @@ class _AnimatedStatsListState extends State<AnimatedStatsList>
     for (final c in _controllers) {
       c.dispose();
     }
+
     super.dispose();
   }
 }

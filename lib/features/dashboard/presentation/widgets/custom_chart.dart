@@ -1,15 +1,17 @@
-// custom_chart.dart (tooltip with fade animation, scrollable chart, live updates ready)
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'chart_toggle.dart';
 import 'chart_painters/bar_chart_painter.dart';
 import 'chart_painters/line_chart_painter.dart';
+import 'package:fit_track_pro/features/dashboard/domain/model/workout_stats.dart';
+import 'package:fit_track_pro/features/workout/domain/model/workout_session.dart';
 
 enum MetricType { steps, calories, bpm }
 
 class CustomChart extends StatefulWidget {
-  final List<Map<String, int>> dataPoints;
+  final List<WorkoutSession> sessions;
 
-  const CustomChart({super.key, required this.dataPoints});
+  const CustomChart({super.key, required this.sessions});
 
   @override
   State<CustomChart> createState() => _CustomChartState();
@@ -42,12 +44,48 @@ class _CustomChartState extends State<CustomChart>
     super.dispose();
   }
 
+  Map<DateTime, WorkoutStats> _groupSessionsByDay(
+    List<WorkoutSession> sessions,
+  ) {
+    final Map<DateTime, WorkoutStats> grouped = {};
+
+    for (final session in sessions) {
+      final date = DateTime(
+        session.date.year,
+        session.date.month,
+        session.date.day,
+      );
+
+      final existing = grouped[date];
+
+      grouped[date] = WorkoutStats(
+        steps: (existing?.steps ?? 0) + session.stats.steps,
+        calories: (existing?.calories ?? 0) + session.stats.calories,
+        bpm: session.stats.bpm,
+      );
+    }
+
+    return grouped;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final metricKey = _metric.name;
-    final data = widget.dataPoints.map((e) => e[metricKey] ?? 0).toList();
-    const chartHeight = 220.0;
+    final grouped = _groupSessionsByDay(widget.sessions);
+    final sortedDates = grouped.keys.toList()..sort();
 
+    final data = sortedDates.map((date) {
+      final stat = grouped[date]!;
+      switch (_metric) {
+        case MetricType.steps:
+          return stat.steps;
+        case MetricType.calories:
+          return stat.calories;
+        case MetricType.bpm:
+          return stat.bpm;
+      }
+    }).toList();
+
+    const chartHeight = 220.0;
     final screenWidth = MediaQuery.of(context).size.width;
     _chartWidth = data.length < 10 ? screenWidth : data.length * 40.0;
 
@@ -55,16 +93,16 @@ class _CustomChartState extends State<CustomChart>
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: MetricType.values
-              .map((m) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
-                    child: ChoiceChip(
-                      label: Text(m.name.toUpperCase()),
-                      selected: _metric == m,
-                      onSelected: (_) => setState(() => _metric = m),
-                    ),
-                  ))
-              .toList(),
+          children: MetricType.values.map((m) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: ChoiceChip(
+                label: Text(m.name.toUpperCase()),
+                selected: _metric == m,
+                onSelected: (_) => setState(() => _metric = m),
+              ),
+            );
+          }).toList(),
         ),
         const SizedBox(height: 12),
         ChartToggle(
@@ -105,13 +143,15 @@ class _CustomChartState extends State<CustomChart>
                         opacity: _fadeAnimation,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${data[_tappedIndex!]}',
+                            '${data[_tappedIndex!]} on ${DateFormat('MMM d').format(sortedDates[_tappedIndex!])}',
                             style: const TextStyle(color: Colors.white),
                           ),
                         ),

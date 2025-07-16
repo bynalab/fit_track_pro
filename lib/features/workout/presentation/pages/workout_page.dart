@@ -1,4 +1,5 @@
 import 'package:fit_track_pro/core/utils/formatter.dart';
+import 'package:fit_track_pro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fit_track_pro/features/workout/presentation/bloc/workout_bloc.dart';
@@ -62,22 +63,22 @@ class _WorkoutPageState extends State<WorkoutPage>
     }
   }
 
-  String formatDuration(int seconds) {
-    final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
-    final secs = (seconds % 60).toString().padLeft(2, '0');
-    return '$minutes:$secs';
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onHorizontalDragEnd: _handleSwipe,
       child: BlocListener<WorkoutBloc, WorkoutState>(
         listener: (context, state) {
-          if (state is WorkoutPaused) {
+          if (state is WorkoutCompleted) {
+            context.read<DashboardCubit>().refresh();
+          }
+
+          if (state is WorkoutInProgress) {
+            if (!_pulseController.isAnimating) {
+              _pulseController.repeat(reverse: true);
+            }
+          } else {
             _pulseController.stop();
-          } else if (state is WorkoutInProgress) {
-            _pulseController.repeat(reverse: true);
           }
         },
         child: BlocBuilder<WorkoutBloc, WorkoutState>(
@@ -105,7 +106,10 @@ class _WorkoutPageState extends State<WorkoutPage>
                       children: [
                         Hero(
                           tag: 'start-workout',
-                          child: AnimatedRing(progress: (seconds % 60) / 60),
+                          child: AnimatedRing(
+                            progress: (seconds % 60) / 60,
+                            controller: _pulseController,
+                          ),
                         ),
                         ScaleTransition(
                           scale: Tween(begin: 1.0, end: 1.05).animate(
