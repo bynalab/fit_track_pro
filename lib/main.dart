@@ -1,4 +1,5 @@
 import 'package:fit_track_pro/core/di/injector.dart';
+import 'package:fit_track_pro/core/services/notification_service.dart';
 import 'package:fit_track_pro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
 import 'package:fit_track_pro/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:fit_track_pro/features/workout/presentation/bloc/workout_bloc.dart';
@@ -9,6 +10,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   initDependencies();
+  try {
+    NotificationService.init();
+  } catch (e) {
+    // print(e);
+  }
+
   runApp(const FitTrackApp());
   listenToWorkoutUpdates();
 }

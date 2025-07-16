@@ -1,3 +1,4 @@
+import 'package:fit_track_pro/core/services/notification_service.dart';
 import 'package:fit_track_pro/features/dashboard/data/workout_repository.dart';
 import 'package:fit_track_pro/features/workout/data/services/workout_timer_service.dart';
 import 'package:get_it/get_it.dart';
@@ -8,5 +9,7 @@ final sl = GetIt.instance;
 
 void initDependencies() {
   sl.registerLazySingleton(() => DashboardCubit(WorkoutRepository()));
-  sl.registerLazySingleton(() => WorkoutBloc(WorkoutTimerService()));
+  sl.registerLazySingleton(
+    () => WorkoutBloc(WorkoutTimerService(), NotificationService()),
+  );
 }

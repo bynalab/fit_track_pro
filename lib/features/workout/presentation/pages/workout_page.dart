@@ -179,6 +179,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                 ),
               ),
               bottomSheet: BottomSheet(
+                enableDrag: false,
                 onClosing: () {},
                 builder: (_) => Container(
                   height: 120,
