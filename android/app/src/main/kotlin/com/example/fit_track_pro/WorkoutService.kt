@@ -50,4 +50,8 @@ class WorkoutService : Service(), EventChannel.StreamHandler {
     override fun onCancel(arguments: Any?) {
         stopStreamingStats()
     }
+
+    fun resetStats() {
+        elapsed = 0
+    }
 }

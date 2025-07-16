@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 class WorkoutRepository {
   static const _eventChannel = EventChannel('com.fittrack/workoutStream');
+  static const _channel = MethodChannel('workout_channel');
 
   Stream<WorkoutStats> getWorkoutStatsStream() {
     return _eventChannel.receiveBroadcastStream().map((event) {
@@ -14,5 +15,9 @@ class WorkoutRepository {
         calories: map['calories'] ?? 0,
       );
     });
+  }
+
+  Future<void> resetStats() async {
+    await _channel.invokeMethod('resetStats');
   }
 }

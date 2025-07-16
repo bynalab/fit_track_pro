@@ -78,10 +78,10 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     _timerService.stop();
     await _stopListeningToStats();
     await notifications.cancel(1);
+    await repository.resetStats();
 
     // TODO(byna): persist the stats
 
-    add(UpdateStats(WorkoutStats(steps: 0, bpm: 0, calories: 0)));
     emit(const WorkoutCompleted());
   }
 
