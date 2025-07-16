@@ -14,7 +14,7 @@ void main() {
 }
 
 void listenToWorkoutUpdates() {
-  sl<DashboardCubit>().startListeningToStats();
+  // sl<DashboardCubit>().startListeningToStats();
 }
 
 class FitTrackApp extends StatelessWidget {

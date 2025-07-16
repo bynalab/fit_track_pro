@@ -1,57 +1,57 @@
-import 'dart:async';
+import 'package:fit_track_pro/features/workout/data/services/workout_timer_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
 import 'package:equatable/equatable.dart';
 
 part 'workout_event.dart';
 part 'workout_state.dart';
 
 class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
-  Timer? _timer;
-  int _elapsedSeconds = 0;
+  final WorkoutTimerService _timerService;
 
-  WorkoutBloc() : super(const WorkoutInitial()) {
+  WorkoutBloc(this._timerService) : super(const WorkoutInitial()) {
     on<StartWorkout>(_onStart);
     on<PauseWorkout>(_onPause);
     on<SkipWorkout>(_onSkip);
     on<ResumeWorkout>(_onResume);
     on<EndWorkout>(_onEnd);
+    on<Tick>(_onTick);
   }
 
   void _onStart(StartWorkout event, Emitter<WorkoutState> emit) {
-    _elapsedSeconds = 0;
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _elapsedSeconds++;
-      add(ResumeWorkout(elapsed: _elapsedSeconds));
+    _timerService.start((seconds) {
+      add(Tick(elapsed: seconds));
     });
-    emit(WorkoutInProgress(elapsed: _elapsedSeconds));
+    emit(const WorkoutInProgress(elapsed: 0));
   }
 
   void _onPause(PauseWorkout event, Emitter<WorkoutState> emit) {
-    _timer?.cancel();
-    emit(WorkoutPaused(elapsed: _elapsedSeconds));
-  }
-
-  void _onSkip(SkipWorkout event, Emitter<WorkoutState> emit) {
-    _timer?.cancel();
-    emit(WorkoutSkipped(elapsed: _elapsedSeconds));
+    _timerService.pause();
+    emit(WorkoutPaused(elapsed: _timerService.elapsed));
   }
 
   void _onResume(ResumeWorkout event, Emitter<WorkoutState> emit) {
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _elapsedSeconds++;
-      add(ResumeWorkout(elapsed: _elapsedSeconds));
-    });
-    emit(WorkoutInProgress(elapsed: event.elapsed));
+    _timerService.resume();
+    emit(WorkoutInProgress(elapsed: _timerService.elapsed));
+  }
+
+  void _onSkip(SkipWorkout event, Emitter<WorkoutState> emit) {
+    _timerService.pause();
+    emit(WorkoutSkipped(elapsed: _timerService.elapsed));
   }
 
   void _onEnd(EndWorkout event, Emitter<WorkoutState> emit) {
-    _timer?.cancel();
+    _timerService.stop();
     emit(const WorkoutCompleted());
+  }
+
+  void _onTick(Tick event, Emitter<WorkoutState> emit) {
+    emit(WorkoutInProgress(elapsed: event.elapsed));
   }
 
   @override
   Future<void> close() {
-    _timer?.cancel();
+    _timerService.dispose();
     return super.close();
   }
 }

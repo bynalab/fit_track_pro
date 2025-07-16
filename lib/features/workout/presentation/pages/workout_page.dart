@@ -52,7 +52,7 @@ class _WorkoutPageState extends State<WorkoutPage>
   }
 
   void _handleSwipe(DragEndDetails details) {
-    if (details.primaryVelocity != null) {
+    if (details.primaryVelocity != null && details.primaryVelocity != 0) {
       if (details.primaryVelocity! < 0) {
         // swipe left to skip
         context.read<WorkoutBloc>().add(SkipWorkout());
@@ -81,15 +81,14 @@ class _WorkoutPageState extends State<WorkoutPage>
             _pulseController.repeat(reverse: true);
           }
         },
-        child: Scaffold(
-          body: BlocBuilder<WorkoutBloc, WorkoutState>(
-            builder: (context, state) {
-              final seconds =
-                  state is WorkoutInProgress || state is WorkoutPaused
-                      ? (state as dynamic).elapsed
-                      : 0;
+        child: BlocBuilder<WorkoutBloc, WorkoutState>(
+          builder: (context, state) {
+            final seconds = state is WorkoutInProgress || state is WorkoutPaused
+                ? (state as dynamic).elapsed
+                : 0;
 
-              return Center(
+            return Scaffold(
+              body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -109,36 +108,33 @@ class _WorkoutPageState extends State<WorkoutPage>
                           tag: 'start-workout',
                           child: AnimatedRing(progress: (seconds % 60) / 60),
                         ),
-                        Positioned(
-                          bottom: 80,
-                          child: ScaleTransition(
-                            scale: Tween(begin: 1.0, end: 1.05).animate(
-                              CurvedAnimation(
-                                parent: _pulseController,
-                                curve: Curves.easeInOut,
+                        ScaleTransition(
+                          scale: Tween(begin: 1.0, end: 1.05).animate(
+                            CurvedAnimation(
+                              parent: _pulseController,
+                              curve: Curves.easeInOut,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Live Heart Rate',
+                                style: TextStyle(fontSize: 18),
                               ),
-                            ),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'Live Heart Rate',
-                                  style: TextStyle(fontSize: 18),
-                                ),
-                                BlocBuilder<DashboardCubit, DashboardState>(
-                                  builder: (context, dashboardState) {
-                                    final bpm = dashboardState.stats.bpm;
+                              BlocBuilder<DashboardCubit, DashboardState>(
+                                builder: (context, dashboardState) {
+                                  final bpm = dashboardState.stats.bpm;
 
-                                    return Text(
-                                      '$bpm BPM',
-                                      style: const TextStyle(
-                                        fontSize: 36,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ],
-                            ),
+                                  return Text(
+                                    '$bpm BPM',
+                                    style: const TextStyle(
+                                      fontSize: 36,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -148,84 +144,116 @@ class _WorkoutPageState extends State<WorkoutPage>
                       builder: (context, dashboardState) {
                         return SlideTransition(
                           position: _slideAnimation,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildStatCard(
-                                icon: const WalkingMan(),
-                                label: 'Steps',
-                                value: numberFormat(dashboardState.stats.steps),
-                              ),
-                              const SizedBox(width: 16),
-                              _buildStatCard(
-                                icon: const Icon(
-                                  Icons.local_fire_department,
-                                  color: Colors.white,
-                                  size: 28,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: WorkoutStatCard(
+                                    icon: const WalkingMan(),
+                                    label: 'Steps',
+                                    value: numberFormat(
+                                        dashboardState.stats.steps),
+                                  ),
                                 ),
-                                label: 'Calories',
-                                value:
-                                    numberFormat(dashboardState.stats.calories),
-                              ),
-                            ],
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: WorkoutStatCard(
+                                    icon: const Icon(
+                                      Icons.local_fire_department,
+                                      color: Colors.white,
+                                      size: 28,
+                                    ),
+                                    label: 'Calories',
+                                    value: numberFormat(
+                                        dashboardState.stats.calories),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         );
                       },
                     ),
                   ],
                 ),
-              );
-            },
-          ),
-          bottomSheet: BottomSheet(
-            onClosing: () {},
-            builder: (_) => Container(
-              height: 120,
-              padding: const EdgeInsets.all(16),
-              decoration: const BoxDecoration(
-                color: Colors.black54,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<WorkoutBloc>().add(PauseWorkout());
-                    },
-                    icon: const Icon(Icons.pause),
-                    label: const Text('Pause'),
+              bottomSheet: BottomSheet(
+                onClosing: () {},
+                builder: (_) => Container(
+                  height: 120,
+                  padding: const EdgeInsets.all(16),
+                  decoration: const BoxDecoration(
+                    color: Colors.black54,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context
-                          .read<WorkoutBloc>()
-                          .add(const ResumeWorkout(elapsed: 60));
-                    },
-                    icon: const Icon(Icons.start),
-                    label: const Text('Resume'),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      // ElevatedButton.icon(
+                      //   onPressed: () {
+                      //     context.read<WorkoutBloc>().add(StartWorkout());
+                      //   },
+                      //   icon: const Icon(Icons.play_arrow),
+                      //   label: const Text('Start'),
+                      // ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          if (state is WorkoutInitial) {
+                            context.read<WorkoutBloc>().add(StartWorkout());
+                          } else if (state is WorkoutPaused) {
+                            context
+                                .read<WorkoutBloc>()
+                                .add(ResumeWorkout(elapsed: state.elapsed));
+                          } else {
+                            context.read<WorkoutBloc>().add(PauseWorkout());
+                          }
+                        },
+                        icon: Icon(
+                          state is WorkoutInProgress
+                              ? Icons.pause
+                              : Icons.play_arrow,
+                        ),
+                        label: state is WorkoutInitial
+                            ? const Text('Start')
+                            : state is WorkoutInProgress
+                                ? const Text('Pause')
+                                : const Text('Resume'),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          context.read<WorkoutBloc>().add(SkipWorkout());
+                        },
+                        icon: const Icon(Icons.skip_next),
+                        label: const Text('Skip'),
+                      ),
+                    ],
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      context.read<WorkoutBloc>().add(SkipWorkout());
-                    },
-                    icon: const Icon(Icons.skip_next),
-                    label: const Text('Skip'),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
       ),
     );
   }
+}
 
-  Widget _buildStatCard({
-    required Widget icon,
-    required String label,
-    required String value,
-  }) {
+class WorkoutStatCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final Widget icon;
+
+  const WorkoutStatCard({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       color: Colors.white24,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -240,7 +268,10 @@ class _WorkoutPageState extends State<WorkoutPage>
               children: [
                 Text(
                   label,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
                 ),
                 Text(
                   value,

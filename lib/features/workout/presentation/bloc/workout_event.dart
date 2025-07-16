@@ -7,6 +7,14 @@ abstract class WorkoutEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class Tick extends WorkoutEvent {
+  final int elapsed;
+  const Tick({required this.elapsed});
+
+  @override
+  List<Object?> get props => [elapsed];
+}
+
 class StartWorkout extends WorkoutEvent {}
 
 class PauseWorkout extends WorkoutEvent {}
