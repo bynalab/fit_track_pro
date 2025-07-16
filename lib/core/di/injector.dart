@@ -10,6 +10,10 @@ final sl = GetIt.instance;
 void initDependencies() {
   sl.registerLazySingleton(() => DashboardCubit(WorkoutRepository()));
   sl.registerLazySingleton(
-    () => WorkoutBloc(WorkoutTimerService(), NotificationService()),
+    () => WorkoutBloc(
+      WorkoutRepository(),
+      WorkoutTimerService(),
+      NotificationService(),
+    ),
   );
 }

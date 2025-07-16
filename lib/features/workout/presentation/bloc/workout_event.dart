@@ -30,3 +30,9 @@ class ResumeWorkout extends WorkoutEvent {
 }
 
 class EndWorkout extends WorkoutEvent {}
+
+class UpdateStats extends WorkoutEvent {
+  final WorkoutStats stats;
+
+  const UpdateStats(this.stats);
+}

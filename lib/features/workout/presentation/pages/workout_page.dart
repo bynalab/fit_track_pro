@@ -1,10 +1,9 @@
 import 'package:fit_track_pro/core/utils/formatter.dart';
-import 'package:fit_track_pro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
-import 'package:fit_track_pro/features/dashboard/presentation/cubit/dashboard_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fit_track_pro/features/workout/presentation/bloc/workout_bloc.dart';
 import 'package:fit_track_pro/features/workout/presentation/widgets/ring_painter.dart';
+import 'package:lottie/lottie.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
@@ -121,18 +120,12 @@ class _WorkoutPageState extends State<WorkoutPage>
                                 'Live Heart Rate',
                                 style: TextStyle(fontSize: 18),
                               ),
-                              BlocBuilder<DashboardCubit, DashboardState>(
-                                builder: (context, dashboardState) {
-                                  final bpm = dashboardState.stats.bpm;
-
-                                  return Text(
-                                    '$bpm BPM',
-                                    style: const TextStyle(
-                                      fontSize: 36,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  );
-                                },
+                              Text(
+                                '${state.stats?.bpm ?? 0} BPM',
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -140,40 +133,36 @@ class _WorkoutPageState extends State<WorkoutPage>
                       ],
                     ),
                     const SizedBox(height: 32),
-                    BlocBuilder<DashboardCubit, DashboardState>(
-                      builder: (context, dashboardState) {
-                        return SlideTransition(
-                          position: _slideAnimation,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: WorkoutStatCard(
-                                    icon: const WalkingMan(),
-                                    label: 'Steps',
-                                    value: numberFormat(
-                                        dashboardState.stats.steps),
-                                  ),
+                    SlideTransition(
+                      position: _slideAnimation,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: WorkoutStatCard(
+                                icon: WalkingMan(
+                                  isAnimating: state is WorkoutInProgress,
                                 ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: WorkoutStatCard(
-                                    icon: const Icon(
-                                      Icons.local_fire_department,
-                                      color: Colors.white,
-                                      size: 28,
-                                    ),
-                                    label: 'Calories',
-                                    value: numberFormat(
-                                        dashboardState.stats.calories),
-                                  ),
-                                ),
-                              ],
+                                label: 'Steps',
+                                value: numberFormat(state.stats?.steps),
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: WorkoutStatCard(
+                                icon: const Icon(
+                                  Icons.local_fire_department,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                                label: 'Calories',
+                                value: numberFormat(state.stats?.calories),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -192,16 +181,10 @@ class _WorkoutPageState extends State<WorkoutPage>
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      // ElevatedButton.icon(
-                      //   onPressed: () {
-                      //     context.read<WorkoutBloc>().add(StartWorkout());
-                      //   },
-                      //   icon: const Icon(Icons.play_arrow),
-                      //   label: const Text('Start'),
-                      // ),
                       ElevatedButton.icon(
                         onPressed: () {
-                          if (state is WorkoutInitial) {
+                          if (state is WorkoutInitial ||
+                              state is WorkoutCompleted) {
                             context.read<WorkoutBloc>().add(StartWorkout());
                           } else if (state is WorkoutPaused) {
                             context
@@ -216,19 +199,22 @@ class _WorkoutPageState extends State<WorkoutPage>
                               ? Icons.pause
                               : Icons.play_arrow,
                         ),
-                        label: state is WorkoutInitial
+                        label: (state is WorkoutInitial ||
+                                state is WorkoutCompleted)
                             ? const Text('Start')
                             : state is WorkoutInProgress
                                 ? const Text('Pause')
                                 : const Text('Resume'),
                       ),
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          context.read<WorkoutBloc>().add(SkipWorkout());
-                        },
-                        icon: const Icon(Icons.skip_next),
-                        label: const Text('Skip'),
-                      ),
+                      if (state is! WorkoutInitial &&
+                          state is! WorkoutCompleted)
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context.read<WorkoutBloc>().add(EndWorkout());
+                          },
+                          icon: const Icon(Icons.stop),
+                          label: const Text('End'),
+                        ),
                     ],
                   ),
                 ),
@@ -291,15 +277,63 @@ class WorkoutStatCard extends StatelessWidget {
   }
 }
 
-class WalkingMan extends StatelessWidget {
-  const WalkingMan({super.key});
+class WalkingMan extends StatefulWidget {
+  final bool isAnimating;
+
+  const WalkingMan({
+    super.key,
+    this.isAnimating = true,
+  });
+
+  @override
+  State<WalkingMan> createState() => _WalkingManState();
+}
+
+class _WalkingManState extends State<WalkingMan>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  bool _compositionLoaded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void didUpdateWidget(WalkingMan oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.isAnimating != oldWidget.isAnimating && _compositionLoaded) {
+      if (widget.isAnimating) {
+        _controller.repeat();
+      } else {
+        _controller.stop();
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Image.asset(
-      'assets/images/walking_man.gif',
+    return Lottie.asset(
+      'assets/lottie/walking_man.json',
       width: 40,
       height: 40,
+      controller: _controller,
+      onLoaded: (composition) {
+        _controller.duration = composition.duration;
+        _compositionLoaded = true;
+
+        if (widget.isAnimating) {
+          _controller.repeat();
+        }
+      },
     );
   }
 }

@@ -17,11 +17,6 @@ void main() {
   }
 
   runApp(const FitTrackApp());
-  listenToWorkoutUpdates();
-}
-
-void listenToWorkoutUpdates() {
-  // sl<DashboardCubit>().startListeningToStats();
 }
 
 class FitTrackApp extends StatelessWidget {
