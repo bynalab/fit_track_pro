@@ -65,8 +65,8 @@ flutter test
 ```
 
 ## Known Limitation
-The app currently supports only portrait mode.
-iOS notification might not work as expected on simulator
+- The app currently supports only portrait mode.
+- iOS notification might not work as expected on simulator
 
 ## Contributing
 
