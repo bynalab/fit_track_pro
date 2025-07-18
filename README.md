@@ -2,6 +2,15 @@
 
 Fit Track Pro is a comprehensive Flutter-based fitness tracking application designed to monitor and display real-time workout statistics such as heart rate, steps, and calories burned. It features an interactive UI with animated components and integrates state management using Bloc and Cubit patterns.
 
+## Screenshots/Record
+<img width="150" alt="Screenshot_1752838295" src="https://github.com/user-attachments/assets/f171a5b6-f70b-48e1-b7db-4a5b4caf6bd3" />  
+
+<img width="150" alt="Screenshot_1752838890" src="https://github.com/user-attachments/assets/24d9f78f-2528-4b69-b428-f65cb1db0380" />
+
+<img width="150" alt="Screenshot_1752838307" src="https://github.com/user-attachments/assets/f3a19a09-80e0-4793-b173-5625bd2acf39" />  
+
+<img width="150" alt="Screenshot_1752838311" src="https://github.com/user-attachments/assets/b28ed003-8a65-4060-955f-9e19f05ab86b" />  
+
 ## Features
 
 - Real-time heart rate monitoring with animated visual feedback.
