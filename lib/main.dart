@@ -27,6 +27,7 @@ class FitTrackApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'FitTrack Pro',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData.dark(),
         initialRoute: '/',
         routes: {
