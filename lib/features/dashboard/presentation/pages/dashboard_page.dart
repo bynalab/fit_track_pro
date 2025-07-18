@@ -45,12 +45,15 @@ class DashboardPage extends StatelessWidget {
                                 icon: Icons.local_fire_department,
                                 color: Colors.yellow,
                               ),
-                              DashboardCard(
-                                title: 'Heart Rate',
-                                value: state.stats.bpm,
-                                unit: 'BPM',
-                                icon: Icons.heart_broken,
-                                color: Colors.red,
+                              Hero(
+                                tag: 'bpm',
+                                child: DashboardCard(
+                                  title: 'Heart Rate',
+                                  value: state.stats.bpm,
+                                  unit: 'BPM',
+                                  icon: Icons.heart_broken,
+                                  color: Colors.red,
+                                ),
                               ),
                             ],
                           ),
@@ -64,10 +67,8 @@ class DashboardPage extends StatelessWidget {
           },
         ),
       ),
-      floatingActionButton: const Hero(
-        tag: 'start-workout',
-        child: MorphingFAB(),
-      ),
+      floatingActionButton: const MorphingFABMenu(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

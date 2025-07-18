@@ -105,7 +105,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                       alignment: Alignment.center,
                       children: [
                         Hero(
-                          tag: 'start-workout',
+                          tag: 'bpm',
                           child: AnimatedRing(
                             progress: (seconds % 60) / 60,
                             controller: _pulseController,
@@ -174,54 +174,58 @@ class _WorkoutPageState extends State<WorkoutPage>
               bottomSheet: BottomSheet(
                 enableDrag: false,
                 onClosing: () {},
-                builder: (_) => Container(
-                  height: 120,
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    color: Colors.black54,
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: () {
-                          if (state is WorkoutInitial ||
-                              state is WorkoutCompleted) {
-                            context.read<WorkoutBloc>().add(StartWorkout());
-                          } else if (state is WorkoutPaused) {
-                            context
-                                .read<WorkoutBloc>()
-                                .add(ResumeWorkout(elapsed: state.elapsed));
-                          } else {
-                            context.read<WorkoutBloc>().add(PauseWorkout());
-                          }
-                        },
-                        icon: Icon(
-                          state is WorkoutInProgress
-                              ? Icons.pause
-                              : Icons.play_arrow,
-                        ),
-                        label: (state is WorkoutInitial ||
-                                state is WorkoutCompleted)
-                            ? const Text('Start')
-                            : state is WorkoutInProgress
-                                ? const Text('Pause')
-                                : const Text('Resume'),
+                builder: (_) {
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
                       ),
-                      if (state is! WorkoutInitial &&
-                          state is! WorkoutCompleted)
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            context.read<WorkoutBloc>().add(EndWorkout());
-                          },
-                          icon: const Icon(Icons.stop),
-                          label: const Text('End'),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      spacing: 20,
+                      children: [
+                        Expanded(
+                          child: CustomButton(
+                            onPressed: () {
+                              if (state is WorkoutInitial ||
+                                  state is WorkoutCompleted) {
+                                context.read<WorkoutBloc>().add(StartWorkout());
+                              } else if (state is WorkoutPaused) {
+                                context
+                                    .read<WorkoutBloc>()
+                                    .add(ResumeWorkout(elapsed: state.elapsed));
+                              } else {
+                                context.read<WorkoutBloc>().add(PauseWorkout());
+                              }
+                            },
+                            label: switch (state) {
+                              WorkoutInitial() || WorkoutCompleted() => 'Start',
+                              WorkoutInProgress() => 'Pause',
+                              _ => 'Resume'
+                            },
+                            icon: state is WorkoutInProgress
+                                ? Icons.pause
+                                : Icons.play_arrow,
+                          ),
                         ),
-                    ],
-                  ),
-                ),
+                        if (state is! WorkoutInitial &&
+                            state is! WorkoutCompleted)
+                          Expanded(
+                            child: CustomButton(
+                              onPressed: () {
+                                context.read<WorkoutBloc>().add(EndWorkout());
+                              },
+                              icon: Icons.stop,
+                              label: 'End',
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
               ),
             );
           },
@@ -338,6 +342,47 @@ class _WalkingManState extends State<WalkingMan>
           _controller.repeat();
         }
       },
+    );
+  }
+}
+
+class CustomButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  const CustomButton({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onPressed,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.black),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:fit_track_pro/features/workout/domain/repository/i_workout_repos
 import 'package:fit_track_pro/features/dashboard/domain/model/workout_stats.dart';
 import 'package:fit_track_pro/features/workout/data/services/workout_timer_service.dart';
 import 'package:fit_track_pro/features/workout/domain/model/workout_session.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
 import 'package:equatable/equatable.dart';
@@ -36,11 +37,15 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     _timerService.start((seconds) {
       add(Tick(elapsed: seconds));
 
-      notifications.showWorkoutProgress(
-        id: 1,
-        title: 'Workout in progress',
-        body: 'Elapsed time: ${formatElapsedTime(seconds)}',
-      );
+      try {
+        notifications.showWorkoutProgress(
+          id: 1,
+          title: 'Workout in progress',
+          body: 'Elapsed time: ${formatElapsedTime(seconds)}',
+        );
+      } catch (e) {
+        debugPrint(e.toString());
+      }
     });
 
     emit(const WorkoutInProgress(elapsed: 0));
@@ -48,7 +53,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
 
   void _onPause(PauseWorkout event, Emitter<WorkoutState> emit) {
     _timerService.pause();
-    notifications.cancel(1);
+    notifications.cancel(1).catchError(onError);
     _stopListeningToStats();
 
     if (state.stats != null) {
@@ -62,25 +67,27 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
     _startListeningToStats();
     _timerService.resume();
 
-    notifications.showWorkoutProgress(
-      id: 1,
-      title: 'Workout resumed',
-      body: 'Elapsed time: ${formatElapsedTime(_timerService.elapsed)}',
-    );
+    notifications
+        .showWorkoutProgress(
+          id: 1,
+          title: 'Workout resumed',
+          body: 'Elapsed time: ${formatElapsedTime(_timerService.elapsed)}',
+        )
+        .catchError(onError);
 
     emit(WorkoutInProgress(elapsed: _timerService.elapsed));
   }
 
   void _onSkip(SkipWorkout event, Emitter<WorkoutState> emit) {
     _timerService.pause();
-    notifications.cancel(1);
+    notifications.cancel(1).catchError(onError);
     emit(WorkoutSkipped(elapsed: _timerService.elapsed));
   }
 
   void _onEnd(EndWorkout event, Emitter<WorkoutState> emit) async {
     _timerService.stop();
     await _stopListeningToStats();
-    await notifications.cancel(1);
+    await notifications.cancel(1).catchError(onError);
     await repository.resetStatsStream();
 
     await repository.saveSession(
@@ -137,7 +144,7 @@ class WorkoutBloc extends Bloc<WorkoutEvent, WorkoutState> {
   Future<void> close() async {
     await _stopListeningToStats();
     _timerService.dispose();
-    await notifications.cancel(1);
+    await notifications.cancel(1).catchError(onError);
     return super.close();
   }
 }
