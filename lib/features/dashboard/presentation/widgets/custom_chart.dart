@@ -91,6 +91,11 @@ class _CustomChartState extends State<CustomChart>
 
     return Column(
       children: [
+        ChartToggle(
+          selected: _chartType,
+          onChanged: (type) => setState(() => _chartType = type),
+        ),
+        const SizedBox(height: 40),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: MetricType.values.map((m) {
@@ -103,11 +108,6 @@ class _CustomChartState extends State<CustomChart>
               ),
             );
           }).toList(),
-        ),
-        const SizedBox(height: 12),
-        ChartToggle(
-          selected: _chartType,
-          onChanged: (type) => setState(() => _chartType = type),
         ),
         const SizedBox(height: 16),
         SingleChildScrollView(

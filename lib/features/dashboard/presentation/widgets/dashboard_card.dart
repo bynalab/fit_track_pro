@@ -24,7 +24,7 @@ class DashboardCard extends StatelessWidget {
       color: color.withValues(alpha: 0.1),
       elevation: 0,
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Icon(icon, size: 32, color: color),

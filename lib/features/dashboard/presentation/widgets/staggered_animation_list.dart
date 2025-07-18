@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 
-class AnimatedStatsList extends StatefulWidget {
+class StaggeredAnimationList extends StatefulWidget {
   final List<Widget> children;
-  const AnimatedStatsList({super.key, required this.children});
+  final Axis direction;
+
+  const StaggeredAnimationList({
+    super.key,
+    required this.children,
+    this.direction = Axis.horizontal,
+  });
 
   @override
-  State<AnimatedStatsList> createState() => _AnimatedStatsListState();
+  State<StaggeredAnimationList> createState() => _StaggeredAnimationListState();
 }
 
-class _AnimatedStatsListState extends State<AnimatedStatsList>
+class _StaggeredAnimationListState extends State<StaggeredAnimationList>
     with TickerProviderStateMixin {
   late List<AnimationController> _controllers;
   late List<Animation<double>> _animations;
@@ -41,7 +47,8 @@ class _AnimatedStatsListState extends State<AnimatedStatsList>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Wrap(
+      direction: widget.direction,
       children: List.generate(
         widget.children.length,
         (index) {

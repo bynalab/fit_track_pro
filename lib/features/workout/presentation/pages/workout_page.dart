@@ -1,10 +1,13 @@
 import 'package:fit_track_pro/core/utils/formatter.dart';
 import 'package:fit_track_pro/features/dashboard/presentation/cubit/dashboard_cubit.dart';
+import 'package:fit_track_pro/features/workout/presentation/widgets/custom_button.dart';
+import 'package:fit_track_pro/features/workout/presentation/widgets/walking_man.dart';
+import 'package:fit_track_pro/features/workout/presentation/widgets/workout_stat_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fit_track_pro/features/workout/presentation/bloc/workout_bloc.dart';
 import 'package:fit_track_pro/features/workout/presentation/widgets/ring_painter.dart';
-import 'package:lottie/lottie.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
@@ -61,6 +64,10 @@ class _WorkoutPageState extends State<WorkoutPage>
         context.read<WorkoutBloc>().add(PauseWorkout());
       }
     }
+  }
+
+  void triggerHapticFeeback() {
+    HapticFeedback.mediumImpact();
   }
 
   @override
@@ -190,6 +197,8 @@ class _WorkoutPageState extends State<WorkoutPage>
                         Expanded(
                           child: CustomButton(
                             onPressed: () {
+                              triggerHapticFeeback();
+
                               if (state is WorkoutInitial ||
                                   state is WorkoutCompleted) {
                                 context.read<WorkoutBloc>().add(StartWorkout());
@@ -216,6 +225,7 @@ class _WorkoutPageState extends State<WorkoutPage>
                           Expanded(
                             child: CustomButton(
                               onPressed: () {
+                                triggerHapticFeeback();
                                 context.read<WorkoutBloc>().add(EndWorkout());
                               },
                               icon: Icons.stop,
@@ -229,158 +239,6 @@ class _WorkoutPageState extends State<WorkoutPage>
               ),
             );
           },
-        ),
-      ),
-    );
-  }
-}
-
-class WorkoutStatCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final Widget icon;
-
-  const WorkoutStatCard({
-    super.key,
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white24,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        child: Row(
-          children: [
-            icon,
-            const SizedBox(width: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                  ),
-                ),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class WalkingMan extends StatefulWidget {
-  final bool isAnimating;
-
-  const WalkingMan({
-    super.key,
-    this.isAnimating = true,
-  });
-
-  @override
-  State<WalkingMan> createState() => _WalkingManState();
-}
-
-class _WalkingManState extends State<WalkingMan>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  bool _compositionLoaded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
-
-  @override
-  void didUpdateWidget(WalkingMan oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.isAnimating != oldWidget.isAnimating && _compositionLoaded) {
-      if (widget.isAnimating) {
-        _controller.repeat();
-      } else {
-        _controller.stop();
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Lottie.asset(
-      'assets/lottie/walking_man.json',
-      width: 40,
-      height: 40,
-      controller: _controller,
-      onLoaded: (composition) {
-        _controller.duration = composition.duration;
-        _compositionLoaded = true;
-
-        if (widget.isAnimating) {
-          _controller.repeat();
-        }
-      },
-    );
-  }
-}
-
-class CustomButton extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const CustomButton({
-    super.key,
-    required this.label,
-    required this.icon,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onPressed,
-      child: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, color: Colors.black),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.black,
-                ),
-              ),
-            ],
-          ),
         ),
       ),
     );
