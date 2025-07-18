@@ -11,6 +11,14 @@ Fit Track Pro is a comprehensive Flutter-based fitness tracking application desi
 - Notification service integration.
 - Modular architecture separating domain, data, and presentation layers.
 
+## Architecture Overview
+The app uses a modular architecture with separation of concerns:
+
+- Core: Contains utilities, services, constants, and dependency injection.
+- Features: Divided into dashboard and workout modules, each with domain, data, and presentation layers.
+- State Management: Uses Bloc and Cubit for managing state and business logic.
+  
+
 ## Project Structure
 
 ```
@@ -63,10 +71,15 @@ Run tests with:
 ```bash
 flutter test
 ```
+This will execute unit, widget, and integration tests to verify app functionality.
+
+## Assumptions
+- Skipping a workout is the same as ending it
 
 ## Known Limitation
 - The app currently supports only portrait mode.
 - iOS notification might not work as expected on simulator
+- Currently no confirmation when user end workout
 
 ## Contributing
 
