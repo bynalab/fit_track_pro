@@ -10,11 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   initDependencies();
-  try {
-    NotificationService.init();
-  } catch (e) {
-    // print(e);
-  }
+  NotificationService.init();
 
   runApp(const FitTrackApp());
 }
