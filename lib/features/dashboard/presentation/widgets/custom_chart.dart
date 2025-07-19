@@ -19,7 +19,7 @@ class CustomChart extends StatefulWidget {
 
 class _CustomChartState extends State<CustomChart>
     with SingleTickerProviderStateMixin {
-  ChartType _chartType = ChartType.line;
+  ChartType _chartType = ChartType.bar;
   MetricType _metric = MetricType.steps;
   int? _tappedIndex;
   double? _chartWidth;
